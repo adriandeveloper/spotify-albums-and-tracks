@@ -1,6 +1,6 @@
 // Self envoking function! once the document is ready, bootstrap our application.
-// We do this to make sure that all the HTML is rendered before we do things 
-// like attach event listeners and any dom manipulation.  
+// We do this to make sure that all the HTML is rendered before we do things
+// like attach event listeners and any dom manipulation.
 (function(){
   $(document).ready(function(){
     bootstrapSpotifySearch();
@@ -27,7 +27,7 @@ function bootstrapSpotifySearch(){
           url: searchUrl
       });
 
-      // Attach the callback for success 
+      // Attach the callback for success
       // (We could have used the success callback directly)
       spotifyQueryRequest.done(function (data) {
         var artists = data.artists;
@@ -35,7 +35,7 @@ function bootstrapSpotifySearch(){
         // Clear the output area
         outputArea.html('');
 
-        // The spotify API sends back an arrat 'items' 
+        // The spotify API sends back an arrat 'items'
         // Which contains the first 20 matching elements.
         // In our case they are artists.
         artists.items.forEach(function(artist){
@@ -47,11 +47,11 @@ function bootstrapSpotifySearch(){
         })
       });
 
-      // Attach the callback for failure 
+      // Attach the callback for failure
       // (Again, we could have used the error callback direcetly)
       spotifyQueryRequest.fail(function (error) {
-        console.log("Something Failed During Spotify Q Request:")
-        console.log(error);
+        // console.log("Something Failed During Spotify Q Request:")
+        // console.log(error);
       });
   });
 }
@@ -60,11 +60,48 @@ function bootstrapSpotifySearch(){
 function displayAlbumsAndTracks(event) {
   var appendToMe = $('#albums-and-tracks');
 
-  // These two lines can be deleted. They're mostly for show. 
-  console.log("you clicked on:");
-  console.log($(event.target).attr('data-spotify-id'));//.attr('data-spotify-id'));
+  var artistID = $(event.target).attr('data-spotify-id')
+
+  getAlbum(artistID).done(function(callback) {
+    // console.log(callback);
+
+    const getAlbumId = callback.items
+
+    for (let i = 0; i < getAlbumId.length; i++) {
+      const albumId = getAlbumId[i].id
+      var track = getAlbumTracks(albumId).done(function(tracks){
+        // console.log(trackname);
+        const trackname = tracks.items
+        for (let i = 0; i < trackname.length; i++) {
+          console.log(trackname[i].name);
+        }
+
+      })
+
+      // console.log(getAlbumId[i].id);
+    }
+
+    // getAlbumId.forEach(function(albumName) {
+    //   albumName.id.id
+    // })
+
+
+  })
+  // These two lines can be deleted. They're mostly for show.
+  // console.log("you clicked on:");
+  // console.log($(event.target).attr('data-spotify-id'));//.attr('data-spotify-id'));
 }
 
 /* YOU MAY WANT TO CREATE HELPER FUNCTIONS OF YOUR OWN */
 /* THEN CALL THEM OR REFERENCE THEM FROM displayAlbumsAndTracks */
 /* THATS PERFECTLY FINE, CREATE AS MANY AS YOU'D LIKE */
+function getAlbum (artistID) {
+  const albums = $.ajax({url: "https://api.spotify.com/v1/artists/" + artistID + "/albums" })
+
+  return albums;
+}
+
+function getAlbumTracks (albumID) {
+  const tracks = $.ajax({url: "https://api.spotify.com/v1/albums/" + albumID + "/tracks" })
+  return tracks;
+}

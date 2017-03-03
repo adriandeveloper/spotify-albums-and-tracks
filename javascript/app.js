@@ -4,7 +4,7 @@
 (function(){
   $(document).ready(function(){
     bootstrapSpotifySearch();
-  })
+  });
 })();
 
 /**
@@ -27,7 +27,7 @@ function bootstrapSpotifySearch(){
           url: searchUrl
       });
 
-      // Attach the callback for success
+      // Attach the cck for success
       // (We could have used the success callback directly)
       spotifyQueryRequest.done(function (data) {
         var artists = data.artists;
@@ -39,12 +39,13 @@ function bootstrapSpotifySearch(){
         // Which contains the first 20 matching elements.
         // In our case they are artists.
         artists.items.forEach(function(artist){
-          var artistLi = $("<li>" + artist.name + " - " + artist.id + "</li>")
+          // var artistLi = $("<li>" + artist.name + " - " + artist.id + "</li>");
+          var artistLi = $("<li>" + artist.name + "</li>");
           artistLi.attr('data-spotify-id', artist.id);
           outputArea.append(artistLi);
 
           artistLi.click(displayAlbumsAndTracks);
-        })
+        });
       });
 
       // Attach the callback for failure
@@ -60,33 +61,30 @@ function bootstrapSpotifySearch(){
 function displayAlbumsAndTracks(event) {
   var appendToMe = $('#albums-and-tracks');
 
-  var artistID = $(event.target).attr('data-spotify-id')
+  var artistID = $(event.target).attr('data-spotify-id');
 
-  getAlbum(artistID).done(function(callback) {
-    // console.log(callback);
+  getAlbum(artistID).done( (albumData) => {
 
-    const getAlbumId = callback.items
+    const albums = albumData.items;
 
-    for (let i = 0; i < getAlbumId.length; i++) {
-      const albumId = getAlbumId[i].id
-      var track = getAlbumTracks(albumId).done(function(tracks){
-        // console.log(trackname);
-        const trackname = tracks.items
-        for (let i = 0; i < trackname.length; i++) {
-          console.log(trackname[i].name);
-        }
+      albums.forEach(function(album){
 
-      })
-
-      // console.log(getAlbumId[i].id);
-    }
-
-    // getAlbumId.forEach(function(albumName) {
-    //   albumName.id.id
-    // })
+        const albumID = album.id;
+        $('#albums-and-tracks').append('<ol>' + album.name + '</ol>');
 
 
-  })
+        getAlbumTracks(albumID).done( (trackData) => {
+          const tracks = trackData.items;
+
+          tracks.forEach(function(track){
+            $('ol').append('<li>' + track.name + '</li>');
+          });
+        });
+      });
+
+
+
+  });
   // These two lines can be deleted. They're mostly for show.
   // console.log("you clicked on:");
   // console.log($(event.target).attr('data-spotify-id'));//.attr('data-spotify-id'));
@@ -96,12 +94,12 @@ function displayAlbumsAndTracks(event) {
 /* THEN CALL THEM OR REFERENCE THEM FROM displayAlbumsAndTracks */
 /* THATS PERFECTLY FINE, CREATE AS MANY AS YOU'D LIKE */
 function getAlbum (artistID) {
-  const albums = $.ajax({url: "https://api.spotify.com/v1/artists/" + artistID + "/albums" })
+  const albums = $.ajax({url: "https://api.spotify.com/v1/artists/" + artistID + "/albums" });
 
   return albums;
 }
 
 function getAlbumTracks (albumID) {
-  const tracks = $.ajax({url: "https://api.spotify.com/v1/albums/" + albumID + "/tracks" })
+  const tracks = $.ajax({url: "https://api.spotify.com/v1/albums/" + albumID + "/tracks" });
   return tracks;
 }
